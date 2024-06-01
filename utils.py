@@ -25,7 +25,7 @@ def extract_json(text):
     Returns:
         list: List of JSON objects extracted from the text.
     """
-    json_strings = re.findall(r'\{(?:[^{}]|(?R))*\}', text)  # Find JSON-like substrings using regular expression
+    json_strings = re.findall(r'{[^{}]*(?:[^{}]*{[^{}]*})*[^{}]*}', text)  # TODO: optimize.
     extracted_json = []
     for json_string in json_strings:
         try:

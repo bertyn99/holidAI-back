@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from model import ChatBot
+from utils import *
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
@@ -178,7 +179,9 @@ def map():
 }
 
 """)
-    return response._result.candidates[0].content.parts[0].text
+    cleaned_text = clean_text(response._result.candidates[0].content.parts[0].text)
+    extracted_json = extract_json(cleaned_text)
+    return extracted_json
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -188,4 +191,4 @@ def chat():
     return response._result.candidates[0].content.parts[0].text
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=True)
