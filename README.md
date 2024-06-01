@@ -14,7 +14,7 @@ conda list --explicit > requirements.txt
 
 Add specific lib:
 ```
-pip install google-generativeai
+pip install google-generativeai Flask-Cors
 ```
 
 
