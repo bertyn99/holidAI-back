@@ -1,30 +1,56 @@
-# import pathlib
-# import textwrap
-
-# import google.generativeai as genai
-
-# from IPython.display import display
-# from IPython.display import Markdown
-
-# # Used to securely store your API key
-# from google.colab import userdata
-
-# # Or use `os.getenv('GOOGLE_API_KEY')` to fetch an environment variable.
-# GOOGLE_API_KEY=userdata.get('GOOGLE_API_KEY')
-
-# genai.configure(api_key=GOOGLE_API_KEY)
-
-# model = genai.GenerativeModel('gemini-1.5-flash')
-
-# chat = model.start_chat(history=[])
-# response = chat.send_message("In one sentence, explain how a computer works to a young child.")
-
 import google.generativeai as genai
+import google.ai.generativelanguage as glm
+from vertexai.generative_models import (Tool)
+import textwrap
+import json
+
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+add_to_database = glm.FunctionDeclaration(
+    name="add_to_database",
+    description=textwrap.dedent("""\
+        Adds entities to the database.
+        """),
+    parameters=glm.Schema(
+            type = glm.Type.OBJECT,
+            properties = {
+                'trip':  glm.Schema(type=glm.Type.OBJECT,
+                    properties = {
+                        'start_date': glm.Schema(type=glm.Type.STRING),
+                        'duration': glm.Schema(type=glm.Type.STRING),
+                        'budget_per_person': glm.Schema(type=glm.Type.STRING),
+                        'interests': glm.Schema(type=glm.Type.STRING),
+                        'travelers': glm.Schema(type=glm.Type.INTEGER),
+                        }
+                    ),
+                'itinerary': glm.Schema(type=glm.Type.ARRAY,
+                                        items = glm.Schema(type = glm.Type.OBJECT,
+                                                           properties = {
+                                            'day': glm.Schema(type=glm.Type.STRING),
+                                            'destinations': glm.Schema(type=glm.Type.ARRAY,
+                                                                       items = glm.Schema(type=glm.Type.OBJECT,
+                                                                                        properties =  {
+                                                                           'name': glm.Schema(type=glm.Type.STRING),
+                                                                           'address': glm.Schema(type=glm.Type.STRING),
+                                                                        #    'coordinates': glm.Schema(type=glm.Type.STRING),
+                                                                           'transport': glm.Schema(type=glm.Type.STRING),
+                                                                           'price': glm.Schema(type=glm.Type.STRING),
+                                                                        #    'ticket_link': glm.Schema(type=glm.Type.STRING),
+                                                                           'weather': glm.Schema(type=glm.Type.STRING),
+                                                                       }))
+                                        })
+                )
+            },
+            required=['trip', 'start_date', 'duration', 'budget_per_person', 'interests', 'travelers', 'itinerary', 'day', 'destinations', 'name', 'address', 'transport', 'price', 'weather']
+        )
+)
+
+model = model = genai.GenerativeModel(
+    model_name='models/gemini-1.5-pro-latest',
+    tools=[add_to_database])
 
 class ChatBot:
     def __init__(self):
@@ -47,12 +73,22 @@ class ChatBot:
     def send_message(self, message):
         if not self.chat:
             raise Exception("Chat model is not initialized.")
-        print(message)
         response = self.chat.send_message(message)
         return response
+    
 
-# Usage example:
-# GOOGLE_API_KEY = 'your-api-key-here'
-# chatbot = ChatBot(GOOGLE_API_KEY)
-# response = chatbot.send_message("In one sentence, explain how a computer works to a young child.")
-# print(response)
+    
+    def get_json(self, message):
+
+        result = model.generate_content(f"""
+Please add the people, places, things, and relationships from this story to the database:
+
+{message}
+""",
+    # Force a function call
+    tool_config={'function_calling_config': 'ANY'})
+
+        fc = result.candidates[0].content.parts[0].function_call
+
+        return json.dumps(type(fc).to_dict(fc)['args'], indent=4)
+
