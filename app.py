@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from model import ChatBot
 from utils import *
 from flask_cors import CORS, cross_origin
-import fitz  # PyMuPDF
+
 
 app = Flask(__name__)
 CORS(app)
@@ -186,15 +186,12 @@ def map():
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    pdf_text = data.get('pdf_text', "")
-    content = data['content']
-    
-
+    response = chatbot.send_message(data['content'])
     print(response._result.candidates[0].content.parts)
     return response._result.candidates[0].content.parts[0].text
 
-@app.route('/upload_pdf', methods=['POST'])
-def upload_pdf():
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -204,21 +201,14 @@ def upload_pdf():
         return jsonify({"error": "No selected file"}), 400
 
     if file and allowed_file(file.filename):
-        pdf_text = extract_text_from_pdf(file)
-        return jsonify({"pdf_text": pdf_text}), 200
+        if file.filename.lower().endswith('.pdf'):
+            pdf_text = extract_text_from_pdf(file)
+            return jsonify({"pdf_text": pdf_text}), 200
+        elif file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            image_text = extract_text_from_image(file)
+            return jsonify({"image_text": image_text}), 200
 
     return jsonify({"error": "Invalid file type"}), 400
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf'}
-
-def extract_text_from_pdf(file):
-    doc = fitz.open(stream=file.read(), filetype="pdf")
-    text = ""
-    for page_num in range(len(doc)):
-        page = doc.load_page(page_num)
-        text += page.get_text()
-    return text
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
