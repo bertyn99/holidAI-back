@@ -1,12 +1,16 @@
 from flask import Flask, request, jsonify
 from model import ChatBot
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app) 
+
 
 chatbot = ChatBot()
 chatbot.initConv()
 
 @app.route('/map', methods=['GET'])
+@cross_origin()
 def map():
     print(chatbot.chat.history)
     response = chatbot.send_message("""L'output doit etre sous format, Envoi moi les informations que l'utilisateur t'a donnee dans un format json brut et valide comme ici avec en plus les lieux d'interet que tu lui propose: {

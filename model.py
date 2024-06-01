@@ -47,6 +47,7 @@ class ChatBot:
     def send_message(self, message):
         if not self.chat:
             raise Exception("Chat model is not initialized.")
+        print(message)
         response = self.chat.send_message(message)
         return response
 
