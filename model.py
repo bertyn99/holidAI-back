@@ -98,7 +98,7 @@ class ChatBot:
                     "Activity 3" : <content>
                 }
             },
-            "missing_information" : <A sentence about the missing information>,
+            "missing_information" : <A sentence about the missing information>
         }
 
 
