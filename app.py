@@ -29,13 +29,25 @@ def chat():
     print(response._result.candidates[0].content.parts)
     return response._result.candidates[0].content.parts[0].text
 
-@app.route('/upload_file', methods=['POST'])
+@app.route('/chat/file', methods=['POST'])
 def upload_file():
+  if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+  
   current_directory = os.getcwd()
-  direcory = os.path.join(current_directory , "test2.png")
+
+  file = request.files['file']
+  if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+  
+  file.save(os.path.join(current_directory , file.filename))
+
+  direcory = os.path.join(current_directory , file.filename)
   sample_file = genai.upload_file(path = direcory , display_name ="voyage" )
   print(sample_file)
-  response = chatbot.model.generate_content(["describe the image" , sample_file])
+  if os.path.exists(direcory):
+    os.remove(direcory)
+  response = chatbot.model.generate_content(["Ask questions about the travel the user want to make taking into account the image" , sample_file])
   chatbot.chat.history.append({
     "role":"user" ,
     "parts":[{"text":response.text}]})

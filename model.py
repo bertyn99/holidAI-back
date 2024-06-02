@@ -106,7 +106,7 @@ class ChatBot:
                     "Night": <Hotel or habitation>
                 }
             },
-            "missing_information" : <A sentence about the missing information>,
+            "missing_information" : <A sentence about the missing information>
         }
 
 
