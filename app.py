@@ -45,7 +45,7 @@ def upload_file():
   direcory = os.path.join(current_directory , file.filename)
   sample_file = genai.upload_file(path = direcory , display_name ="voyage" )
   print(sample_file)
-  response = chatbot.model.generate_content(["Ask questions about the travel the user want to make taking into account the image" , sample_file])
+  response = chatbot.model.generate_content(["Ask questions about the travel the user want to make taking into account the image , only speak in french" , sample_file])
   chatbot.chat.history.append({
     "role":"user" ,
     "parts":[{"text":response.text}]})
