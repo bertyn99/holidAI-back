@@ -58,8 +58,7 @@ def upload_file():
 def summarize():
 
   msg = ""
-  for i in range(len(chatbot.chat.history)):
-    msg += chatbot.chat.history[i].parts[0].text + " "
+  msg += chatbot.chat.history[len(chatbot.chat.history)].parts[0].text + " "
 
   response = chatbot.get_json(
       msg

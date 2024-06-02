@@ -15,37 +15,56 @@ add_to_database = glm.FunctionDeclaration(
         Adds entities to the database.
         """),
     parameters=glm.Schema(
-            type = glm.Type.OBJECT,
-            properties = {
-                'trip':  glm.Schema(type=glm.Type.OBJECT,
-                    properties = {
-                        'start_date': glm.Schema(type=glm.Type.STRING),
-                        'duration': glm.Schema(type=glm.Type.STRING),
-                        'budget_per_person': glm.Schema(type=glm.Type.STRING),
-                        'interests': glm.Schema(type=glm.Type.STRING),
-                        'travelers': glm.Schema(type=glm.Type.INTEGER),
-                        }
-                    ),
-                'itinerary': glm.Schema(type=glm.Type.ARRAY,
-                                        items = glm.Schema(type = glm.Type.OBJECT,
-                                                           properties = {
+        type=glm.Type.OBJECT,
+        properties={
+            'trip': glm.Schema(
+                type=glm.Type.OBJECT,
+                properties={
+                    'start_date': glm.Schema(type=glm.Type.STRING),
+                    'duration': glm.Schema(type=glm.Type.STRING),
+                    'budget_per_person': glm.Schema(type=glm.Type.STRING),
+                    'interests': glm.Schema(type=glm.Type.STRING),
+                    'travelers': glm.Schema(type=glm.Type.INTEGER),
+                }
+            ),
+            'itinerary': glm.Schema(
+                type=glm.Type.ARRAY,
+                items=glm.Schema(
+                    type=glm.Type.OBJECT,
+                    properties={
+                        'adventure': glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                'days': glm.Schema(
+                                    type=glm.Type.ARRAY,
+                                    items=glm.Schema(
+                                        type=glm.Type.OBJECT,
+                                        properties={
                                             'day': glm.Schema(type=glm.Type.STRING),
-                                            'destinations': glm.Schema(type=glm.Type.ARRAY,
-                                                                       items = glm.Schema(type=glm.Type.OBJECT,
-                                                                                        properties =  {
-                                                                           'name': glm.Schema(type=glm.Type.STRING),
-                                                                           'address': glm.Schema(type=glm.Type.STRING),
-                                                                        #    'coordinates': glm.Schema(type=glm.Type.STRING),
-                                                                           'transport': glm.Schema(type=glm.Type.STRING),
-                                                                           'price': glm.Schema(type=glm.Type.STRING),
-                                                                        #    'ticket_link': glm.Schema(type=glm.Type.STRING),
-                                                                           'weather': glm.Schema(type=glm.Type.STRING),
-                                                                       }))
-                                        })
+                                            'destinations': glm.Schema(
+                                                type=glm.Type.ARRAY,
+                                                items=glm.Schema(
+                                                    type=glm.Type.OBJECT,
+                                                    properties={
+                                                        'name': glm.Schema(type=glm.Type.STRING),
+                                                        'address': glm.Schema(type=glm.Type.STRING),
+                                                        'transport': glm.Schema(type=glm.Type.STRING),
+                                                        'price': glm.Schema(type=glm.Type.STRING),
+                                                        'weather': glm.Schema(type=glm.Type.STRING),
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    )
+                                )
+                            }
+                        )
+                    }
                 )
-            },
-            required=['trip', 'start_date', 'duration', 'budget_per_person', 'interests', 'travelers', 'itinerary', 'day', 'destinations', 'name', 'address', 'transport', 'price', 'weather']
-        )
+            )
+        },
+        required=['trip', 'start_date', 'duration', 'budget_per_person', 'interests', 'travelers', 'itinerary', 'adventure', 'days', 'day', 'destinations', 'name', 'address', 'transport', 'price', 'weather']
+    )
 )
 
 model = model = genai.GenerativeModel(
@@ -133,10 +152,9 @@ class ChatBot:
     
     def get_json(self, message):
 
-        result = model.generate_content(f"""
-Please add the people, places, things, and relationships from this story to the database:
-
-{message}
+        result = model.generate_content(
+            f"""
+Please complete this diagram with the travel information you obtain from the history. Make an itinerary for each adventure, each adgventure is {message}
 """,
     # Force a function call
     tool_config={'function_calling_config': 'ANY'})
